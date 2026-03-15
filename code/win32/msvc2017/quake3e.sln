@@ -1,8 +1,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27428.2015
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37027.9 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "botlib", "botlib.vcxproj", "{A410161F-AE9F-485D-A01F-5294891430A6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{157AD8A8-E8BD-41C1-9139-F4687A8E3668} = {157AD8A8-E8BD-41C1-9139-F4687A8E3668}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libjpeg", "libjpeg.vcxproj", "{17867AF4-12CB-4847-A13E-BF37D8BDF597}"
 EndProject
