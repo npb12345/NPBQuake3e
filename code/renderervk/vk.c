@@ -6720,34 +6720,79 @@ static void get_scissor_rect(VkRect2D *r) {
 }
 
 
-static void get_mvp_transform( float *mvp )
+static void get_mvp_transform(float* mvp)
 {
-	if ( backEnd.projection2D )
+	if (backEnd.projection2D)
 	{
 		float mvp0 = 2.0f / glConfig.vidWidth;
 		float mvp5 = 2.0f / glConfig.vidHeight;
 
-		mvp[0]  =  mvp0; mvp[1]  =  0.0f; mvp[2]  = 0.0f; mvp[3]  = 0.0f;
-		mvp[4]  =  0.0f; mvp[5]  =  mvp5; mvp[6]  = 0.0f; mvp[7]  = 0.0f;
+		mvp[0] = mvp0; mvp[1] = 0.0f; mvp[2] = 0.0f; mvp[3] = 0.0f;
+		mvp[4] = 0.0f; mvp[5] = mvp5; mvp[6] = 0.0f; mvp[7] = 0.0f;
 #ifdef USE_REVERSED_DEPTH
-		mvp[8]  =  0.0f; mvp[9]  =  0.0f; mvp[10] = 0.0f; mvp[11] = 0.0f;
+		mvp[8] = 0.0f; mvp[9] = 0.0f; mvp[10] = 0.0f; mvp[11] = 0.0f;
 		mvp[12] = -1.0f; mvp[13] = -1.0f; mvp[14] = 1.0f; mvp[15] = 1.0f;
 #else
-		mvp[8]  =  0.0f; mvp[9]  =  0.0f; mvp[10] = 1.0f; mvp[11] = 0.0f;
+		mvp[8] = 0.0f; mvp[9] = 0.0f; mvp[10] = 1.0f; mvp[11] = 0.0f;
 		mvp[12] = -1.0f; mvp[13] = -1.0f; mvp[14] = 0.0f; mvp[15] = 1.0f;
 #endif
 	}
 	else
 	{
-		const float *p = backEnd.viewParms.projectionMatrix;
+		const float* p;
 		float proj[16];
-		Com_Memcpy( proj, p, 64 );
 
-		// update q3's proj matrix (opengl) to vulkan conventions: z - [0, 1] instead of [-1, 1] and invert y direction
+		if (tess.depthRange == DEPTH_RANGE_WEAPON)
+		{
+			viewParms_t temp = backEnd.viewParms;
+			const float zNear = r_znear->value;
+			const float zFar = temp.zFar;
+			const float depth = zFar - zNear;
+
+			/*
+			** Use a separate projection for the first-person weapon.
+			**
+			** On ultrawide displays, rendering the viewmodel with the same projection
+			** as the world can crop the weapon at normal gameplay FOV values. For
+			** RF_DEPTHHACK / weapon-depth rendering, use a custom horizontal weapon
+			** FOV and a tuned vertical conversion factor so the weapon remains visible
+			** without requiring an excessively distorted world FOV.
+			*/
+			temp.fovX = 130.0f;
+
+			temp.fovY = atan2f(
+				tanf(temp.fovX * (float)M_PI / 300.0f) *
+				((float)glConfig.vidHeight / (float)glConfig.vidWidth),
+				1.0f
+			) * 300.0f / (float)M_PI;
+
+			R_SetupProjection(&temp, zNear, qfalse);
+
+			temp.projectionMatrix[2] = 0;
+			temp.projectionMatrix[6] = 0;
+#ifdef USE_REVERSED_DEPTH
+			temp.projectionMatrix[10] = zNear / depth;
+			temp.projectionMatrix[14] = zFar * zNear / depth;
+#else
+			temp.projectionMatrix[10] = -zFar / depth;
+			temp.projectionMatrix[14] = -zFar * zNear / depth;
+#endif
+
+			p = temp.projectionMatrix;
+		}
+		else
+		{
+			p = backEnd.viewParms.projectionMatrix;
+		}
+
+		Com_Memcpy(proj, p, 64);
+
+		// Convert Q3's projection matrix to Vulkan conventions:
+		// - invert Y
+		// - keep Z in the Vulkan depth range handled by the source projection
 		proj[5] = -p[5];
-		//proj[10] = ( p[10] - 1.0f ) / 2.0f;
-		//proj[14] = p[14] / 2.0f;
-		myGlMultMatrix( vk_world.modelview_transform, proj, mvp );
+
+		myGlMultMatrix(vk_world.modelview_transform, proj, mvp);
 	}
 }
 
