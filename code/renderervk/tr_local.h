@@ -1414,6 +1414,9 @@ extern	cvar_t	*r_printShaders;
 
 extern cvar_t	*r_marksOnTriangleMeshes;
 
+extern cvar_t	*r_weaponFovX;
+extern cvar_t	*r_weaponFovScale;
+
 //====================================================================
 
 void R_SwapBuffers( int );

@@ -178,6 +178,9 @@ cvar_t	*r_marksOnTriangleMeshes;
 cvar_t	*r_aviMotionJpegQuality;
 cvar_t	*r_screenshotJpegQuality;
 
+cvar_t	* r_weaponFovX;
+cvar_t	* r_weaponFovScale;
+
 static cvar_t *r_maxpolys;
 static cvar_t* r_maxpolyverts;
 int		max_polys;
@@ -1573,6 +1576,8 @@ static void R_Register( void )
 	r_flares = ri.Cvar_Get ("r_flares", "0", CVAR_ARCHIVE_ND );
 	ri.Cvar_SetDescription( r_flares, "Enables corona effects on light sources." );
 	r_znear = ri.Cvar_Get( "r_znear", "4", CVAR_CHEAT );
+	r_weaponFovX = ri.Cvar_Get("r_weaponFovX", "130", CVAR_ARCHIVE);
+	r_weaponFovScale = ri.Cvar_Get("r_weaponFovScale", "300", CVAR_ARCHIVE);
 	ri.Cvar_CheckRange( r_znear, "0.001", "200", CV_FLOAT );
 	ri.Cvar_SetDescription( r_znear, "Viewport distance from view origin (how close objects can be to the player before they're clipped out of the scene)." );
 	r_zproj = ri.Cvar_Get( "r_zproj", "64", CVAR_ARCHIVE_ND );

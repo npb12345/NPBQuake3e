@@ -6748,23 +6748,25 @@ static void get_mvp_transform(float* mvp)
 			const float zNear = r_znear->value;
 			const float zFar = temp.zFar;
 			const float depth = zFar - zNear;
+			const float weaponFovX = (r_weaponFovX && r_weaponFovX->value > 1.0f) ? r_weaponFovX->value : 130.0f;
+			const float weaponFovScale = (r_weaponFovScale && r_weaponFovScale->value > 1.0f) ? r_weaponFovScale->value : 300.0f;
 
 			/*
 			** Use a separate projection for the first-person weapon.
 			**
 			** On ultrawide displays, rendering the viewmodel with the same projection
 			** as the world can crop the weapon at normal gameplay FOV values. For
-			** RF_DEPTHHACK / weapon-depth rendering, use a custom horizontal weapon
-			** FOV and a tuned vertical conversion factor so the weapon remains visible
-			** without requiring an excessively distorted world FOV.
+			** weapon-depth rendering, use a custom horizontal weapon FOV and a tuned
+			** vertical conversion factor so the weapon remains visible without
+			** requiring an excessively distorted world FOV.
 			*/
-			temp.fovX = 130.0f;
+			temp.fovX = weaponFovX;
 
 			temp.fovY = atan2f(
-				tanf(temp.fovX * (float)M_PI / 300.0f) *
+				tanf(temp.fovX * (float)M_PI / weaponFovScale) *
 				((float)glConfig.vidHeight / (float)glConfig.vidWidth),
 				1.0f
-			) * 300.0f / (float)M_PI;
+			) * weaponFovScale / (float)M_PI;
 
 			R_SetupProjection(&temp, zNear, qfalse);
 
